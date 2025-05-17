@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-TF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>旅行ミッションビンゴ</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -9,99 +9,172 @@
     <style>
         body {
             font-family: 'Noto Sans JP', sans-serif;
-            background-color: #f0f9ff; /* 淡い青色の背景 */
+            background-color: #f0f9ff;
+            overflow-x: hidden; /* 横スクロールバーを隠す */
         }
+        .bingo-card-container {
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            padding-left: 15px;
+            padding-right: 15px;
+            margin-top: 20px; /* 列ヘッダーがなくなった分の調整 */
+        }
+        /* #bingo-column-headers と .bingo-header-cell 関連のスタイルを削除 */
+
         .bingo-card {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 8px; /* カード間の隙間を少し狭く */
-            max-width: 600px; /* カードの最大幅を少し広げる */
-            margin: 20px auto;
-            padding: 15px; /* カード全体のパディングを少し増やす */
-            background-color: #ffffff; /* カード背景は白 */
-            border-radius: 16px; /* 角丸を大きく */
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1); /* 影を少し濃く */
+            gap: 8px;
+            padding: 15px;
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
         .bingo-cell {
-            aspect-ratio: 1 / 1; /* セルのアスペクト比を1:1に */
+            aspect-ratio: 1 / 1;
             display: flex;
             justify-content: center;
             align-items: center;
             text-align: center;
-            padding: 10px; /* セルのパディングを調整 */
-            border: 2px solid #60a5fa; /* 青色の境界線 */
-            border-radius: 12px; /* セルの角丸 */
-            background-color: #eff6ff; /* セルの背景色を淡い青に */
-            font-size: 0.8rem; /* 文字サイズを少し小さく */
+            padding: 10px;
+            border: 2px solid #60a5fa;
+            border-radius: 12px;
+            background-color: #eff6ff;
+            font-size: 0.8rem;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
-            word-break: break-word; /* 長い単語も改行 */
-            overflow-wrap: break-word; /* 長い単語も改行 */
-            hyphens: auto; /* 必要に応じてハイフン処理 */
+            word-break: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
         }
         .bingo-cell.completed {
-            background-color: #3b82f6; /* 達成済みのセルの背景色 (濃い青) */
+            background-color: #3b82f6;
             color: white;
             text-decoration: line-through;
-            transform: scale(1.05); /* 達成時に少し拡大 */
-        }
-        .bingo-cell h3 {
-            font-family: 'Mochiy Pop One', sans-serif;
-            font-size: 0.9rem; /* カテゴリ名のフォントサイズ */
-            margin-bottom: 5px;
-            color: #2563eb; /* カテゴリ名の文字色 */
+            transform: scale(1.05);
         }
         .new-card-button {
             display: block;
-            margin: 30px auto; /* ボタンのマージンを調整 */
-            padding: 15px 30px; /* ボタンのパディングを調整 */
-            font-size: 1.1rem; /* ボタンの文字サイズを少し大きく */
+            margin: 30px auto;
+            padding: 15px 30px;
+            font-size: 1.1rem;
             font-weight: bold;
             color: white;
-            background-color: #2563eb; /* ボタンの背景色 (濃い青) */
+            background-color: #2563eb;
             border: none;
-            border-radius: 12px; /* ボタンの角丸 */
+            border-radius: 12px;
             cursor: pointer;
             transition: background-color 0.3s ease, transform 0.2s ease;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         .new-card-button:hover {
-            background-color: #1d4ed8; /* ホバー時の背景色 */
-            transform: translateY(-2px); /* ホバー時に少し上に移動 */
+            background-color: #1d4ed8;
+            transform: translateY(-2px);
         }
         .new-card-button:active {
-            transform: translateY(0); /* クリック時に元に戻す */
+            transform: translateY(0);
         }
         .title-header {
             text-align: center;
             margin-top: 30px;
-            margin-bottom: 10px; /* タイトルとカードの間のマージンを調整 */
+            margin-bottom: 10px;
             font-family: 'Mochiy Pop One', sans-serif;
-            font-size: 2.5rem; /* タイトルのフォントサイズを大きく */
-            color: #1e3a8a; /* タイトルの文字色 (濃い藍色) */
+            font-size: 2.5rem;
+            color: #1e3a8a;
         }
         .instructions {
             text-align: center;
-            margin-bottom: 20px;
-            color: #4b5563; /* 説明文の文字色 */
+            margin-bottom: 20px; /* bingo-card-container の margin-top と合わせて調整 */
+            color: #4b5563;
             font-size: 0.9rem;
         }
 
-        /* モバイル向け調整 */
+        /* ビンゴ達成モーダル (変更なし) */
+        .bingo-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0s linear 0.5s;
+        }
+        .bingo-modal.show {
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.5s ease;
+        }
+        .bingo-modal-content {
+            background: linear-gradient(135deg, #60a5fa 0%, #8b5cf6 100%);
+            color: white;
+            padding: 40px 60px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transform: scale(0.7);
+            transition: transform 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+        }
+        .bingo-modal.show .bingo-modal-content {
+            transform: scale(1);
+        }
+        .bingo-modal-content h2 {
+            font-family: 'Mochiy Pop One', sans-serif;
+            font-size: 4rem;
+            margin-bottom: 10px;
+            animation: tada 1.5s ease infinite;
+        }
+        .bingo-modal-content p {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+        .bingo-modal-close-button {
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #3b82f6;
+            background-color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .bingo-modal-close-button:hover {
+            background-color: #eff6ff;
+            transform: translateY(-1px);
+        }
+
+        @keyframes tada {
+            0% {transform: scale(1);}
+            10%, 20% {transform: scale(0.9) rotate(-3deg);}
+            30%, 50%, 70%, 90% {transform: scale(1.1) rotate(3deg);}
+            40%, 60%, 80% {transform: scale(1.1) rotate(-3deg);}
+            100% {transform: scale(1) rotate(0);}
+        }
+
+
         @media (max-width: 640px) {
+            .bingo-card-container {
+                 padding-left: 10px;
+                 padding-right: 10px;
+            }
+            /* .bingo-header-cell 関連のスタイルを削除 */
+            /* #bingo-column-headers 関連のスタイルを削除 */
             .bingo-card {
-                margin: 15px;
                 padding: 10px;
                 gap: 6px;
             }
             .bingo-cell {
-                font-size: 0.7rem; /* モバイルではさらに文字を小さく */
+                font-size: 0.7rem;
                 padding: 8px;
                 border-radius: 8px;
-            }
-            .bingo-cell h3 {
-                font-size: 0.8rem;
             }
             .new-card-button {
                 padding: 12px 25px;
@@ -110,6 +183,16 @@
             .title-header {
                 font-size: 2rem;
             }
+            .bingo-modal-content {
+                padding: 30px 40px;
+                width: 90%;
+            }
+            .bingo-modal-content h2 {
+                font-size: 3rem;
+            }
+            .bingo-modal-content p {
+                font-size: 1.2rem;
+            }
         }
     </style>
 </head>
@@ -117,83 +200,67 @@
     <h1 class="title-header">旅行ミッションビンゴ</h1>
     <p class="instructions">タップしてミッションを達成！新しいカードも作れるよ。</p>
 
-    <div id="bingo-card" class="bingo-card">
+    <div class="bingo-card-container">
+        {/* bingo-column-headers の div を削除 */}
+        <div id="bingo-card" class="bingo-card">
+            {/* ビンゴセルはJavaScriptで生成されます */}
         </div>
+    </div>
 
     <button id="new-card-button" class="new-card-button">新しいカードを作る</button>
 
+    {/* ビンゴ達成モーダル (変更なし) */}
+    <div id="bingo-modal" class="bingo-modal">
+        <div class="bingo-modal-content">
+            <h2>BINGO!</h2>
+            <p>おめでとうございます！<br>素晴らしい旅の思い出ができましたね！</p>
+            <button id="bingo-modal-close-button" class="bingo-modal-close-button">新しいカードで遊ぶ</button>
+        </div>
+    </div>
+
     <script>
-        // ミッションのリスト
-        const missions = {
-            // 1列目: 移動系
+        const missions = { // ミッション内容は変更なし
             movement: [
-                "自分に関係のある数字の車を見つける（誕生日、記念日など）",
-                "赤い車を5台見つける",
-                "YAZAWAステッカーの貼ってある車を見つける",
-                "車内で懐メロのプレイリストを1時間かける",
-                "レンタルサイクルなどシェアリングサービスを使う",
-                "電車で席を譲る",
-                "窓から牛が見える",
-                "虹を見る",
-                "飛行機雲を3本見つける",
-                "サービスエリア・パーキングエリアでご当地ソフトクリームを食べる",
-                "電車で寝ている人の面白い寝相を見る",
-                "バスで一番後ろの席に座る",
-                "知らない駅で降りてみる",
-                "移動中に新しい音楽ジャンルを開拓する",
-                "フェリーに乗る"
+                "自分に関係のある数字の車を見つける（誕生日、記念日など）", "赤い車を5台見つける", "YAZAWAステッカーの貼ってある車を見つける",
+                "車内で懐メロのプレイリストを1時間かける", "レンタルサイクルなどシェアリングサービスを使う", "電車で席を譲る",
+                "窓から牛が見える", "虹を見る", "飛行機雲を3本見つける",
+                "サービスエリア・パーキングエリアでご当地ソフトクリームを食べる", "電車で寝ている人の面白い寝相を見る", "バスで一番後ろの席に座る",
+                "知らない駅で降りてみる", "移動中に新しい音楽ジャンルを開拓する", "フェリーに乗る"
             ],
-            // 2列目: 食事系
             food: [
-                "創業50年以上の店で食事をする",
-                "現地の郷土料理を食べる",
-                "コンビニでアイスを購入する",
-                "旅先で一番高いレストランで食事する",
-                "市場で朝ごはんを食べる",
-                "地元の人におすすめされた店に行く",
-                "テイクアウトして公園で食べる",
-                "変わった自販機を見つけて何か買う",
-                "旅先のスーパーで珍しい食材を見つける",
-                "自分で釣った魚を食べる",
-                "ミシュランガイド掲載店に行く（星なしでもOK）",
-                "パン屋さんで焼きたてのパンを買う",
-                "初めて見るフルーツを食べる",
-                "ご当地ビール・日本酒を飲む",
-                "食べログ評価3.5以上の店に行く"
+                "創業50年以上の店で食事をする", "現地の郷土料理を食べる", "コンビニでアイスを購入する",
+                "旅先で一番高いレストランで食事する", "市場で朝ごはんを食べる", "地元の人におすすめされた店に行く",
+                "テイクアウトして公園で食べる", "変わった自販機を見つけて何か買う", "旅先のスーパーで珍しい食材を見つける",
+                "自分で釣った魚を食べる", "ミシュランガイド掲載店に行く（星なしでもOK）", "パン屋さんで焼きたてのパンを買う",
+                "初めて見るフルーツを食べる", "ご当地ビール・日本酒を飲む", "食べログ評価3.5以上の店に行く"
             ],
-            // 3列目: 訪問先系
             destination: [
-                "古い郵便ポストを見つける",
-                "滝を見に行く",
-                "博物館に行く",
-                "「写真撮りましょうか？」と声をかける",
-                "展望台から景色を眺める",
-                "お土産屋さんで面白いTシャツを見つける",
-                "足湯に入る",
-                "パワースポットと呼ばれる場所に行く",
-                "動物園または水族館に行く",
-                "城跡を訪れる",
-                "映画やドラマのロケ地を訪問する",
-                "手作り体験（陶芸、ガラス細工など）をする",
-                "温泉地の射的で遊ぶ",
-                "ご当地キャラクターと写真を撮る",
-                "縁結びの神社にお参りする"
+                "古い郵便ポストを見つける", "滝を見に行く", "博物館に行く",
+                "「写真撮りましょうか？」と声をかける", "展望台から景色を眺める", "お土産屋さんで面白いTシャツを見つける",
+                "足湯に入る", "パワースポットと呼ばれる場所に行く", "動物園または水族館に行く",
+                "城跡を訪れる", "映画やドラマのロケ地を訪問する", "手作り体験（陶芸、ガラス細工など）をする",
+                "温泉地の射的で遊ぶ", "ご当地キャラクターと写真を撮る", "縁結びの神社にお参りする"
             ]
         };
 
         const bingoCard = document.getElementById('bingo-card');
         const newCardButton = document.getElementById('new-card-button');
+        const bingoModal = document.getElementById('bingo-modal');
+        const bingoModalCloseButton = document.getElementById('bingo-modal-close-button');
 
-        // 指定された配列からランダムにN個の要素を選ぶ関数
+        let isBingoAchieved = false;
+        let cellElements = [];
+
         function getRandomElements(arr, n) {
-            // 配列のコピーを作成して、元の配列を変更しないようにする
             const shuffled = [...arr].sort(() => 0.5 - Math.random());
             return shuffled.slice(0, n);
         }
 
-        // ビンゴカードを生成する関数
         function generateBingoCard() {
-            bingoCard.innerHTML = ''; // 既存のカードをクリア
+            bingoCard.innerHTML = '';
+            isBingoAchieved = false;
+            hideBingoModal();
+            cellElements = [];
 
             const selectedMissions = {
                 movement: getRandomElements(missions.movement, 3),
@@ -201,55 +268,76 @@
                 destination: getRandomElements(missions.destination, 3)
             };
 
-            const cardData = [];
-            // 各列のミッションを交互に配置するようなイメージでデータを準備
-            // 1列目、2列目、3列目の順でセルを埋める
+            let cellIndex = 0;
+            // ミッションのカテゴリ名は表示しませんが、内部的には各カテゴリから均等に選ばれます。
+            // 1列目相当 (以前の移動系ミッションが入る場所)
             for (let i = 0; i < 3; i++) {
-                cardData.push({ category: "移動", text: selectedMissions.movement[i] });
-                cardData.push({ category: "食事", text: selectedMissions.food[i] });
-                cardData.push({ category: "訪問先", text: selectedMissions.destination[i] });
+                createCell(selectedMissions.movement[i], cellIndex++);
             }
-
-            // 実際の表示は列ごとに行う
-            // 画面表示は、1列目(移動)、2列目(食事)、3列目(訪問先)の順
-            // しかし、内部的なデータ構造としては、行ごとにミッションを入れていく
-            // 例： cardData[0] = 移動1, cardData[1] = 食事1, cardData[2] = 訪問先1
-            //      cardData[3] = 移動2, cardData[4] = 食事2, cardData[5] = 訪問先2 ...
-
-            // ビンゴカードのセルを列ごとに生成
-            // 1列目 (移動)
+            // 2列目相当 (以前の食事系ミッションが入る場所)
             for (let i = 0; i < 3; i++) {
-                createCell(selectedMissions.movement[i], "移動");
+                createCell(selectedMissions.food[i], cellIndex++);
             }
-            // 2列目 (食事)
+            // 3列目相当 (以前の訪問先系ミッションが入る場所)
             for (let i = 0; i < 3; i++) {
-                createCell(selectedMissions.food[i], "食事");
-            }
-            // 3列目 (訪問先)
-            for (let i = 0; i < 3; i++) {
-                createCell(selectedMissions.destination[i], "訪問先");
+                createCell(selectedMissions.destination[i], cellIndex++);
             }
         }
 
-        // セルを作成してカードに追加する関数
-        function createCell(missionText, categoryName) {
+        function createCell(missionText, index) {
             const cell = document.createElement('div');
             cell.classList.add('bingo-cell');
-            // cell.innerHTML = `<h3>${categoryName}</h3><p>${missionText}</p>`; // カテゴリ名とミッションを表示
-            cell.innerHTML = `<p>${missionText}</p>`; // ミッションのみ表示（シンプルに）
+            cell.innerHTML = `<p>${missionText}</p>`;
+            cell.dataset.index = index;
 
             cell.addEventListener('click', () => {
+                if (isBingoAchieved) return;
                 cell.classList.toggle('completed');
-                // ここでビンゴ達成判定も将来的に追加可能
+                checkBingo();
             });
             bingoCard.appendChild(cell);
+            cellElements.push(cell);
         }
 
-        // 初期カードを生成
+        function checkBingo() { // ビンゴ判定ロジックは変更なし
+            if (isBingoAchieved) return;
+
+            const cells = cellElements;
+            if (cells.length !== 9) return;
+
+            const winningPatterns = [
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // 横
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // 縦
+                [0, 4, 8], [2, 4, 6]             // 斜め
+            ];
+
+            for (const pattern of winningPatterns) {
+                const [a, b, c] = pattern;
+                if (cells[a] && cells[a].classList.contains('completed') &&
+                    cells[b] && cells[b].classList.contains('completed') &&
+                    cells[c] && cells[c].classList.contains('completed')) {
+                    isBingoAchieved = true;
+                    showBingoModal();
+                    break;
+                }
+            }
+        }
+
+        function showBingoModal() {
+            bingoModal.classList.add('show');
+        }
+
+        function hideBingoModal() {
+            bingoModal.classList.remove('show');
+        }
+
         generateBingoCard();
 
-        // 新しいカードボタンのイベントリスナー
         newCardButton.addEventListener('click', generateBingoCard);
+        bingoModalCloseButton.addEventListener('click', () => {
+            hideBingoModal();
+            generateBingoCard();
+        });
 
     </script>
 </body>
