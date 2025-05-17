@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-TF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>旅行ミッションビンゴ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #f0f9ff; /* 淡い青色の背景 */
+        }
+        .bingo-card {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px; /* カード間の隙間を少し狭く */
+            max-width: 600px; /* カードの最大幅を少し広げる */
+            margin: 20px auto;
+            padding: 15px; /* カード全体のパディングを少し増やす */
+            background-color: #ffffff; /* カード背景は白 */
+            border-radius: 16px; /* 角丸を大きく */
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1); /* 影を少し濃く */
+        }
+        .bingo-cell {
+            aspect-ratio: 1 / 1; /* セルのアスペクト比を1:1に */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 10px; /* セルのパディングを調整 */
+            border: 2px solid #60a5fa; /* 青色の境界線 */
+            border-radius: 12px; /* セルの角丸 */
+            background-color: #eff6ff; /* セルの背景色を淡い青に */
+            font-size: 0.8rem; /* 文字サイズを少し小さく */
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            word-break: break-word; /* 長い単語も改行 */
+            overflow-wrap: break-word; /* 長い単語も改行 */
+            hyphens: auto; /* 必要に応じてハイフン処理 */
+        }
+        .bingo-cell.completed {
+            background-color: #3b82f6; /* 達成済みのセルの背景色 (濃い青) */
+            color: white;
+            text-decoration: line-through;
+            transform: scale(1.05); /* 達成時に少し拡大 */
+        }
+        .bingo-cell h3 {
+            font-family: 'Mochiy Pop One', sans-serif;
+            font-size: 0.9rem; /* カテゴリ名のフォントサイズ */
+            margin-bottom: 5px;
+            color: #2563eb; /* カテゴリ名の文字色 */
+        }
+        .new-card-button {
+            display: block;
+            margin: 30px auto; /* ボタンのマージンを調整 */
+            padding: 15px 30px; /* ボタンのパディングを調整 */
+            font-size: 1.1rem; /* ボタンの文字サイズを少し大きく */
+            font-weight: bold;
+            color: white;
+            background-color: #2563eb; /* ボタンの背景色 (濃い青) */
+            border: none;
+            border-radius: 12px; /* ボタンの角丸 */
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .new-card-button:hover {
+            background-color: #1d4ed8; /* ホバー時の背景色 */
+            transform: translateY(-2px); /* ホバー時に少し上に移動 */
+        }
+        .new-card-button:active {
+            transform: translateY(0); /* クリック時に元に戻す */
+        }
+        .title-header {
+            text-align: center;
+            margin-top: 30px;
+            margin-bottom: 10px; /* タイトルとカードの間のマージンを調整 */
+            font-family: 'Mochiy Pop One', sans-serif;
+            font-size: 2.5rem; /* タイトルのフォントサイズを大きく */
+            color: #1e3a8a; /* タイトルの文字色 (濃い藍色) */
+        }
+        .instructions {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #4b5563; /* 説明文の文字色 */
+            font-size: 0.9rem;
+        }
+
+        /* モバイル向け調整 */
+        @media (max-width: 640px) {
+            .bingo-card {
+                margin: 15px;
+                padding: 10px;
+                gap: 6px;
+            }
+            .bingo-cell {
+                font-size: 0.7rem; /* モバイルではさらに文字を小さく */
+                padding: 8px;
+                border-radius: 8px;
+            }
+            .bingo-cell h3 {
+                font-size: 0.8rem;
+            }
+            .new-card-button {
+                padding: 12px 25px;
+                font-size: 1rem;
+            }
+            .title-header {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-blue-50">
+    <h1 class="title-header">旅行ミッションビンゴ</h1>
+    <p class="instructions">タップしてミッションを達成！新しいカードも作れるよ。</p>
+
+    <div id="bingo-card" class="bingo-card">
+        </div>
+
+    <button id="new-card-button" class="new-card-button">新しいカードを作る</button>
+
+    <script>
+        // ミッションのリスト
+        const missions = {
+            // 1列目: 移動系
+            movement: [
+                "自分に関係のある数字の車を見つける（誕生日、記念日など）",
+                "赤い車を5台見つける",
+                "YAZAWAステッカーの貼ってある車を見つける",
+                "車内で懐メロのプレイリストを1時間かける",
+                "レンタルサイクルなどシェアリングサービスを使う",
+                "電車で席を譲る",
+                "窓から牛が見える",
+                "虹を見る",
+                "飛行機雲を3本見つける",
+                "サービスエリア・パーキングエリアでご当地ソフトクリームを食べる",
+                "電車で寝ている人の面白い寝相を見る",
+                "バスで一番後ろの席に座る",
+                "知らない駅で降りてみる",
+                "移動中に新しい音楽ジャンルを開拓する",
+                "フェリーに乗る"
+            ],
+            // 2列目: 食事系
+            food: [
+                "創業50年以上の店で食事をする",
+                "現地の郷土料理を食べる",
+                "コンビニでアイスを購入する",
+                "旅先で一番高いレストランで食事する",
+                "市場で朝ごはんを食べる",
+                "地元の人におすすめされた店に行く",
+                "テイクアウトして公園で食べる",
+                "変わった自販機を見つけて何か買う",
+                "旅先のスーパーで珍しい食材を見つける",
+                "自分で釣った魚を食べる",
+                "ミシュランガイド掲載店に行く（星なしでもOK）",
+                "パン屋さんで焼きたてのパンを買う",
+                "初めて見るフルーツを食べる",
+                "ご当地ビール・日本酒を飲む",
+                "食べログ評価3.5以上の店に行く"
+            ],
+            // 3列目: 訪問先系
+            destination: [
+                "古い郵便ポストを見つける",
+                "滝を見に行く",
+                "博物館に行く",
+                "「写真撮りましょうか？」と声をかける",
+                "展望台から景色を眺める",
+                "お土産屋さんで面白いTシャツを見つける",
+                "足湯に入る",
+                "パワースポットと呼ばれる場所に行く",
+                "動物園または水族館に行く",
+                "城跡を訪れる",
+                "映画やドラマのロケ地を訪問する",
+                "手作り体験（陶芸、ガラス細工など）をする",
+                "温泉地の射的で遊ぶ",
+                "ご当地キャラクターと写真を撮る",
+                "縁結びの神社にお参りする"
+            ]
+        };
+
+        const bingoCard = document.getElementById('bingo-card');
+        const newCardButton = document.getElementById('new-card-button');
+
+        // 指定された配列からランダムにN個の要素を選ぶ関数
+        function getRandomElements(arr, n) {
+            // 配列のコピーを作成して、元の配列を変更しないようにする
+            const shuffled = [...arr].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, n);
+        }
+
+        // ビンゴカードを生成する関数
+        function generateBingoCard() {
+            bingoCard.innerHTML = ''; // 既存のカードをクリア
+
+            const selectedMissions = {
+                movement: getRandomElements(missions.movement, 3),
+                food: getRandomElements(missions.food, 3),
+                destination: getRandomElements(missions.destination, 3)
+            };
+
+            const cardData = [];
+            // 各列のミッションを交互に配置するようなイメージでデータを準備
+            // 1列目、2列目、3列目の順でセルを埋める
+            for (let i = 0; i < 3; i++) {
+                cardData.push({ category: "移動", text: selectedMissions.movement[i] });
+                cardData.push({ category: "食事", text: selectedMissions.food[i] });
+                cardData.push({ category: "訪問先", text: selectedMissions.destination[i] });
+            }
+
+            // 実際の表示は列ごとに行う
+            // 画面表示は、1列目(移動)、2列目(食事)、3列目(訪問先)の順
+            // しかし、内部的なデータ構造としては、行ごとにミッションを入れていく
+            // 例： cardData[0] = 移動1, cardData[1] = 食事1, cardData[2] = 訪問先1
+            //      cardData[3] = 移動2, cardData[4] = 食事2, cardData[5] = 訪問先2 ...
+
+            // ビンゴカードのセルを列ごとに生成
+            // 1列目 (移動)
+            for (let i = 0; i < 3; i++) {
+                createCell(selectedMissions.movement[i], "移動");
+            }
+            // 2列目 (食事)
+            for (let i = 0; i < 3; i++) {
+                createCell(selectedMissions.food[i], "食事");
+            }
+            // 3列目 (訪問先)
+            for (let i = 0; i < 3; i++) {
+                createCell(selectedMissions.destination[i], "訪問先");
+            }
+        }
+
+        // セルを作成してカードに追加する関数
+        function createCell(missionText, categoryName) {
+            const cell = document.createElement('div');
+            cell.classList.add('bingo-cell');
+            // cell.innerHTML = `<h3>${categoryName}</h3><p>${missionText}</p>`; // カテゴリ名とミッションを表示
+            cell.innerHTML = `<p>${missionText}</p>`; // ミッションのみ表示（シンプルに）
+
+            cell.addEventListener('click', () => {
+                cell.classList.toggle('completed');
+                // ここでビンゴ達成判定も将来的に追加可能
+            });
+            bingoCard.appendChild(cell);
+        }
+
+        // 初期カードを生成
+        generateBingoCard();
+
+        // 新しいカードボタンのイベントリスナー
+        newCardButton.addEventListener('click', generateBingoCard);
+
+    </script>
+</body>
+</html>
